@@ -13,6 +13,9 @@ ip link add name vxlan10 type vxlan id 10 dev eth0 local 10.1.1.1 remote 10.1.1.
 #set the interface as up
 ip link set dev vxlan10 up
 
+ip link add eth1 type dummy
+ip link set eth1 up
+
 #add eth1 to the bridge
 brctl addif br0 eth1
 
