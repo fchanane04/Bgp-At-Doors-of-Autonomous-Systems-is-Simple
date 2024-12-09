@@ -9,3 +9,4 @@ apt install docker.io
 usermod -aG docker $USER
 
 #install D-Bus tool to avoid dbus-launch error
+apt install dbus-x11
