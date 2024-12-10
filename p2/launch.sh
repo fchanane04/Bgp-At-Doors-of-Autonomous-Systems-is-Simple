@@ -1,24 +1,20 @@
-docker run -d --privileged --name fchanane_router1 router
-docker run -d --privileged --name fchanane_router2 router
-#docker run -d --privileged --name fchanane_host1 alpine
-#docker run -d --privileged --name fchanane_host2 alpine
+#!/bin/bash
 
-docker cp conf/router1.sh fchanane_router1:/tmp/router1.sh
-docker cp conf/router2.sh fchanane_router2:/tmp/router2.sh
-#docker cp conf/host1.sh fchanane_host1:/tmp/host1.sh
-#docker cp conf/host2.sh fchanane_host2:/tmp/host2.sh
-
-
-docker exec fchanane_router1 chmod 777 /tmp/router1.sh
-docker exec fchanane_router2 chmod 777 /tmp/router2.sh
-#docker exec fchanane_host1 chmod 777 /tmp/host1.sh
-#docker exec fchanane_host2 chmod 777 /tmp/host2.sh
-
-docker exec -it fchanane_router1 bash -c "/tmp/router1.sh"
-docker exec -it fchanane_router2 bash -c "/tmp/router2.sh"
-#docker exec -it fchanane_host1 bash -c "/tmp/host1.sh"
-#docker exec -it fchanane_host2 bash -c "/tmp/host2.sh"
-
-docker exec -it fchanane_router1 ip addr show eth0
-docker exec -it fchanane_router2 ip addr show eth0
+# Driver script to configure all running containers
+for cont_id in $(docker ps -q); do
+    # Get the container's hostname
+    current_hostname=$(docker exec $cont_id hostname)
+    
+    if [[ "$current_hostname" =~ ^fchanane_host-[1-2]$ ]]; then
+        echo "Configuring $current_hostname with host_config.sh"
+        docker cp ./conf/host_config.sh $cont_id:/host_config.sh
+        docker exec $cont_id /bin/sh /host_config.sh
+    elif [[ "$current_hostname" =~ ^fchanane_router-[1-2]$ ]]; then
+        echo "Configuring $current_hostname with router_config.sh"
+        docker cp ./conf/router_config.sh $cont_id:/router_config.sh
+        docker exec $cont_id bash /router_config.sh
+    else
+        echo "Unknown container type: $current_hostname"
+    fi
+done
 
